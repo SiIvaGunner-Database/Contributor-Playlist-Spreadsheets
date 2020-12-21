@@ -83,7 +83,7 @@ function checkAllPlaylists()
     while (responseCode == null)
     
     Logger.log("Row " + row + ": " + playlistTitle + " (" + responseCode + ")");
-    
+    /*
     switch(responseCode)
     {
       case 200:
@@ -123,7 +123,7 @@ function checkAllPlaylists()
       default:
         errorlog.push("Response code " + responseCode + "\n[" + title + "]\n[" + url + "]");
     }
-    
+    //*/
     if (status == "Public" || status == "Unlisted")
     {
       var channel = playlistSheet.getRange(row, 4).getValue();
@@ -150,7 +150,8 @@ function checkAllPlaylists()
       
       if (playlistDetails[5].toString() != videoIds.toString())
       {
-        Logger.log("Setting " + playlistDetails[5]);
+        Logger.log(videoIds);
+        Logger.log(playlistDetails[5]);
         
         for (var k in playlistDetails[5])
         {
@@ -214,15 +215,7 @@ function checkAllPlaylists()
 
         var logDate = formatDate(new Date());
         changelogSheet.getRange(2, 6).setValue(logDate);
-        
-        var currentId = changelogSheet.getRange(2, 1).getValue();
-        var sheetIds = playlistSheet.getRange(2, 1, playlistSheet.getLastRow() - 1).getValues();
-        var index = sheetIds.findIndex(id => {return id[0] == currentId});
-        
-        if (index != -1)
-          playlistSheet.getRange(index + 1, 8).setValue(logDate);
-        else
-          errorlog.push("ID not found: " + currentId);
+        playlistSheet.getRange(row, 8).setValue(logDate);
       }
     }
 
