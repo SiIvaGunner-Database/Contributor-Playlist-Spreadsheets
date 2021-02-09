@@ -22,15 +22,24 @@ function checkAllPlaylists()
       
       for (var i in newPlaylists)
       {
-        newPlaylists[i] = newPlaylists[i].replace("&feature=youtu.be", "").replace(/h.*list=/, "");
+        newPlaylists[i] = newPlaylists[i].replace("&feature=youtu.be", "").replace(/h.*list=/, "").trim();
+
         var playlistId = newPlaylists[i];
         var playlistIds = playlistSheet.getRange(2, 1, playlistSheet.getLastRow() - 1).getValues();
         var index = playlistIds.findIndex(id => {return id == playlistId});
+
+        var emailAddress = "a.k.zamboni@gmail.com";
+        var subject = "SiIvaGunner Contributor Playlists Update";
+        var message = "New ID: " + playlistId + " [" + playlistId.length + "]";
         
-        if (playlistId.length != 34 || index != -1)
+        Logger.log(message);
+        MailApp.sendEmail(emailAddress, subject, message);
+
+        if (index != -1)
         {
           formSheet.getRange(row, 3).setValue("Failed");
-          errorlog.push("Failed to get playlist ID on row " + row);
+          Logger.log("Duplicate playlist ID: " + playlistId);
+          errorlog.push("Duplicate playlist ID: " + playlistId);
         }
         else
         {
@@ -83,7 +92,7 @@ function checkAllPlaylists()
     while (responseCode == null)
     
     Logger.log("Row " + row + ": " + playlistTitle + " (" + responseCode + ")");
-    /*
+
     switch(responseCode)
     {
       case 200:
@@ -95,7 +104,6 @@ function checkAllPlaylists()
           status = "Public";
         }
         break;
-      case 401:
       case 403:
         if (status != "Private")
         {
@@ -114,16 +122,10 @@ function checkAllPlaylists()
           status = "Deleted";
         }
         break;
-      case 429:
-      case 500:
-      case 503:
-      case 504:
-        Utilities.sleep(1000);
-        break;
       default:
         errorlog.push("Response code " + responseCode + "\n[" + title + "]\n[" + url + "]");
     }
-    //*/
+    
     if (status == "Public" || status == "Unlisted")
     {
       var channel = playlistSheet.getRange(row, 4).getValue();
