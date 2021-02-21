@@ -82,10 +82,17 @@ function checkAllPlaylists()
     {
       try
       {
-        var responseCode = UrlFetchApp.fetch(url, {muteHttpExceptions: true}).getResponseCode();
+        var responseCode = UrlFetchApp.fetch(url).getResponseCode();
       }
       catch (e)
       {
+        Logger.log(e);
+
+        if (e.toString().indexOf("429") != -1)
+          Utilities.sleep(30000);
+        else
+          Utilities.sleep(1000);
+        
         var responseCode = null;
       }
     }
@@ -103,6 +110,8 @@ function checkAllPlaylists()
           changelog.push("The playlist has been made public.");
           status = "Public";
         }
+        break;
+      case 401:
         break;
       case 403:
         if (status != "Private")
@@ -123,7 +132,7 @@ function checkAllPlaylists()
         }
         break;
       default:
-        errorlog.push("Response code " + responseCode + "\n[" + title + "]\n[" + url + "]");
+        errorlog.push("Response code " + responseCode + "\n[" + playlistTitle + "]\n[" + url + "]");
     }
     
     if (status == "Public" || status == "Unlisted")
