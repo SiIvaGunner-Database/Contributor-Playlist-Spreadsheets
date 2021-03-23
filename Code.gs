@@ -22,7 +22,7 @@ function checkAllPlaylists()
       
       for (var i in newPlaylists)
       {
-        newPlaylists[i] = newPlaylists[i].replace("&feature=youtu.be", "").replace(/h.*list=/, "").trim();
+        newPlaylists[i] = newPlaylists[i].replace("&feature=youtu.be", "").replace(/h.*list=/, "").replace(/\(.*/, "").trim();
 
         var playlistId = newPlaylists[i];
         var playlistIds = playlistSheet.getRange(2, 1, playlistSheet.getLastRow() - 1).getValues();
@@ -82,17 +82,12 @@ function checkAllPlaylists()
     {
       try
       {
-        var responseCode = UrlFetchApp.fetch(url).getResponseCode();
+        var responseCode = UrlFetchApp.fetch(url, {muteHttpExceptions: true}).getResponseCode();
       }
       catch (e)
       {
         Logger.log(e);
-
-        if (e.toString().indexOf("429") != -1)
-          Utilities.sleep(30000);
-        else
-          Utilities.sleep(1000);
-        
+        Utilities.sleep(10000);
         var responseCode = null;
       }
     }
