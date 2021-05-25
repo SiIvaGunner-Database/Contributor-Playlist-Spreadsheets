@@ -101,7 +101,6 @@ function checkAllPlaylists()
         if (status != "Public" && status != "Unlisted")
         {
           playlistSheet.getRange(row, 7).setValue("Public");
-          errorlog.push(playlistTitle + " has been made public. [" + responseCode + "]");
           changelog.push("The playlist has been made public.");
           status = "Public";
         }
@@ -112,7 +111,6 @@ function checkAllPlaylists()
         if (status != "Private")
         {
           playlistSheet.getRange(row, 7).setValue("Private");
-          errorlog.push(playlistTitle + " has been made private. [" + responseCode + "]");
           changelog.push("The playlist has been made private.");
           status = "Private";
         }
@@ -121,7 +119,6 @@ function checkAllPlaylists()
         if (status != "Deleted")
         {
           playlistSheet.getRange(row, 7).setValue("Deleted");
-          errorlog.push(playlistTitle + " has been deleted. [" + responseCode + "]");
           changelog.push("The playlist has been deleted.");
           status = "Deleted";
         }
@@ -142,7 +139,7 @@ function checkAllPlaylists()
       if (playlistDetails[1] != playlistTitle)
       {
         Logger.log("Setting playlist title " + playlistDetails[1]);
-        changelog.push("Old title: " + playlistTitle + "\nNew title: " + playlistDetails[1]);
+        changelog.push("Old playlist title: " + playlistTitle + "\nNew playlist title: " + playlistDetails[1]);
         playlistSheet.getRange(row, 2).setValue(playlistDetails[1]);
       }
       
@@ -229,12 +226,13 @@ function checkAllPlaylists()
   }
   while (++row <= lastRow && currentTime.getTime() - startTime.getTime() < 300000) // Run for 5 minutes.
   
-  if (errorlog.length > 0)
+  if (errorlog.length > 0 || changelog.length > 0)
   {
     // Send an email notifying of any changes or errors.
     var emailAddress = "a.k.zamboni@gmail.com";
     var subject = "SiIvaGunner Contributor Playlists Update";
-    var message = "There are " + errorlog.length + " new changes.\n\n" + errorlog.join("\n\n").replace(/NEWLINE/g, "\n");
+    var changeCount = errorlog.length + changelog.length;
+    var message = "There are " + changeCount + " updates.\n\n" + errorlog.join("\n\n") + changelog.join("\n\n");
     
     MailApp.sendEmail(emailAddress, subject, message);
     Logger.log("Email successfully sent.\n" + message);
