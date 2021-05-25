@@ -232,7 +232,7 @@ function checkAllPlaylists()
     var emailAddress = "a.k.zamboni@gmail.com";
     var subject = "SiIvaGunner Contributor Playlists Update";
     var changeCount = errorlog.length + changelog.length;
-    var message = "There are " + changeCount + " updates.\n\n" + errorlog.join("\n\n") + changelog.join("\n\n");
+    var message = "[https://docs.google.com/spreadsheets/d/13UJWz8wWSVADkMW_lW8nkQFcez6T7xuDw3_IrMuez2g/edit#gid=1039083277]\nThere are " + changeCount + " updates.\n\n" + errorlog.join("\n\n") + changelog.join("\n\n");
     
     MailApp.sendEmail(emailAddress, subject, message);
     Logger.log("Email successfully sent.\n" + message);
