@@ -1,7 +1,6 @@
 var errorlog = [];
 
-function checkAllPlaylists()
-{
+function checkAllPlaylists() {
   var startTime = new Date();
   
   var playlistSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -12,16 +11,13 @@ function checkAllPlaylists()
   var formSheet = formSpreadsheet.getSheetByName("Contributor Playlists");
   var row = formSheet.getLastRow();
   
-  do
-  {
+  do {
     var status = formSheet.getRange(row, 3).getValue();
     
-    if (status == "")
-    {
+    if (status == "") {
       var newPlaylists = formSheet.getRange(row, 2).getValue().replace(/ /g, "").split(",");
       
-      for (var i in newPlaylists)
-      {
+      for (var i in newPlaylists) {
         newPlaylists[i] = newPlaylists[i].replace("&feature=youtu.be", "").replace(/h.*list=/, "").replace(/\(.*/, "").trim();
 
         var playlistId = newPlaylists[i];
@@ -35,14 +31,12 @@ function checkAllPlaylists()
         Logger.log(message);
         MailApp.sendEmail(emailAddress, subject, message);
 
-        if (index != -1)
-        {
+        if (index != -1) {
           formSheet.getRange(row, 3).setValue("Failed");
           Logger.log("Duplicate playlist ID: " + playlistId);
           errorlog.push("Duplicate playlist ID: " + playlistId);
         }
-        else
-        {
+        else {
           var playlistDetails = getPlaylistDetails(playlistId, true);
           
           playlistSheet.insertRowBefore(2);
@@ -65,8 +59,7 @@ function checkAllPlaylists()
   row = 2;
   var lastRow = playlistSheet.getLastRow();
   
-  do
-  {
+  do {
     var changelog = [];
     var playlistDetails = [];
 
@@ -78,14 +71,11 @@ function checkAllPlaylists()
 
     var url = "https://www.youtube.com/oembed?url=https://www.youtube.com/playlist?list=" + playlistId + "&format=json";
     
-    do
-    {
-      try
-      {
+    do {
+      try {
         var responseCode = UrlFetchApp.fetch(url, {muteHttpExceptions: true}).getResponseCode();
       }
-      catch (e)
-      {
+      catch (e) {
         Logger.log(e);
         Utilities.sleep(10000);
         var responseCode = null;
@@ -95,11 +85,9 @@ function checkAllPlaylists()
     
     Logger.log("Row " + row + ": " + playlistTitle + " (" + responseCode + ")");
 
-    switch(responseCode)
-    {
+    switch(responseCode) {
       case 200:
-        if (status != "Public" && status != "Unlisted")
-        {
+        if (status != "Public" && status != "Unlisted") {
           playlistSheet.getRange(row, 7).setValue("Public");
           changelog.push("The playlist has been made public.");
           status = "Public";
@@ -108,16 +96,14 @@ function checkAllPlaylists()
       case 401:
         break;
       case 403:
-        if (status != "Private")
-        {
+        if (status != "Private") {
           playlistSheet.getRange(row, 7).setValue("Private");
           changelog.push("The playlist has been made private.");
           status = "Private";
         }
         break;
       case 404:
-        if (status != "Deleted")
-        {
+        if (status != "Deleted") {
           playlistSheet.getRange(row, 7).setValue("Deleted");
           changelog.push("The playlist has been deleted.");
           status = "Deleted";
@@ -127,8 +113,7 @@ function checkAllPlaylists()
         errorlog.push("Response code " + responseCode + "\n[" + playlistTitle + "]\n[" + url + "]");
     }
     
-    if (status == "Public" || status == "Unlisted")
-    {
+    if (status == "Public" || status == "Unlisted") {
       var channel = playlistSheet.getRange(row, 4).getValue();
       
       if (channel == "Ignore")
@@ -136,36 +121,31 @@ function checkAllPlaylists()
       else
         playlistDetails = getPlaylistDetails(playlistId, false);
 
-      if (playlistDetails[1] != playlistTitle)
-      {
+      if (playlistDetails[1] != playlistTitle) {
         Logger.log("Setting playlist title " + playlistDetails[1]);
         changelog.push("Old playlist title: " + playlistTitle + "\nNew playlist title: " + playlistDetails[1]);
         playlistSheet.getRange(row, 2).setValue(playlistDetails[1]);
       }
       
-      if (playlistDetails[2] != contributor)
-      {
+      if (playlistDetails[2] != contributor) {
         Logger.log("Setting contributor " + playlistDetails[2]);
         changelog.push("Old contributor name: " + contributor.replace(/.*", "/g, "").replace("\")", "") + 
                        "\nNew contributor name: " + playlistDetails[2].replace(/.*", "/g, "").replace("\")", ""));
         playlistSheet.getRange(row, 3).setValue(playlistDetails[2]);
       }
       
-      if (playlistDetails[5].toString() != videoIds.toString())
-      {
+      if (playlistDetails[5].toString() != videoIds.toString()) {
         Logger.log(videoIds);
         Logger.log(playlistDetails[5]);
         
-        for (var k in playlistDetails[5])
-        {
+        for (var k in playlistDetails[5]) {
           var index = videoIds.findIndex(id => {return id == playlistDetails[5][k]});
           
           if (index == -1)
             changelog.push(formatHyperlink("Added " + playlistDetails[5][k], "https://www.youtube.com/watch?v=" + playlistDetails[5][k]));
         }
 
-        for (var k in videoIds)
-        {
+        for (var k in videoIds) {
           var index = playlistDetails[5].findIndex(id => {return id == videoIds[k]});
           
           if (index == -1)
@@ -179,27 +159,22 @@ function checkAllPlaylists()
         playlistSheet.getRange(row, 6).setValue(playlistDetails[5].toString().replace(/,/g, ", "));
       }
     }
-    else
-    {
+    else {
       playlistDetails[0] = formatHyperlink(playlistId, "https://www.youtube.com/playlist?list=" + playlistId);
       playlistDetails[1] = playlistTitle;
       playlistDetails[2] = contributor;
     }
 
-    if (changelog.length > 0)
-    {
-      for (var i in changelog)
-      {
+    if (changelog.length > 0) {
+      for (var i in changelog) {
         changelogSheet.insertRowBefore(2);
         changelogSheet.getRange(2, 1).setValue(playlistDetails[0]);
         changelogSheet.getRange(2, 2).setValue(playlistDetails[1]);
         changelogSheet.getRange(2, 3).setValue(changelog[i]);
         changelogSheet.getRange(2, 4).setValue(playlistDetails[2]);
 
-        if (changelog[i].indexOf("Added") != -1 || changelog[i].indexOf("Removed") != -1)
-        {
-          try
-          {
+        if (changelog[i].indexOf("Added") != -1 || changelog[i].indexOf("Removed") != -1) {
+          try {
             var videoId = changelog[i].replace(/.*v=/g, "").replace(/".*/g, "");
             var videoResponse = YouTube.Videos.list("snippet",{id: videoId, maxResults: 1, type: 'video'});
             
@@ -208,8 +183,7 @@ function checkAllPlaylists()
             
             changelogSheet.getRange(2, 5).setValue(channel)
           }
-          catch (e) 
-          {
+          catch (e)  {
             errorlog.push(videoId + "\n" + e);
             changelogSheet.getRange(2, 5).setValue("Unknown")
           }
@@ -226,8 +200,7 @@ function checkAllPlaylists()
   }
   while (++row <= lastRow && currentTime.getTime() - startTime.getTime() < 300000) // Run for 5 minutes.
   
-  if (errorlog.length > 0 || changelog.length > 0)
-  {
+  if (errorlog.length > 0 || changelog.length > 0) {
     // Send an email notifying of any changes or errors.
     var emailAddress = "a.k.zamboni@gmail.com";
     var subject = "SiIvaGunner Contributor Playlists Update";
@@ -239,19 +212,16 @@ function checkAllPlaylists()
   }
 }
 
-function getPlaylistDetails(playlistId, getChannels)
-{
+function getPlaylistDetails(playlistId, getChannels) {
   var status = "Public";
   var channels = [];
   var videoIds = [];
   var nextPageToken = "";
   
-  try
-  {
+  try {
     var playlistResponse = YouTube.Playlists.list("snippet", {id: playlistId});
   }
-  catch(e)
-  {
+  catch(e) {
     errorlog.push(playlistId + "\n" + e);
     Logger.log(playlistId + "\n" + e);
   }
@@ -261,27 +231,21 @@ function getPlaylistDetails(playlistId, getChannels)
   var contributor = playlist.channelTitle;
   var contributorId = playlist.channelId;
   
-  while (nextPageToken != null)
-  {
-    try
-    {
+  while (nextPageToken != null) {
+    try {
       var playlistItemsResponse = YouTube.PlaylistItems.list("snippet", {playlistId: playlistId, maxResults: 50, pageToken: nextPageToken});
     }
-    catch(e)
-    {
+    catch(e) {
       errorlog.push(playlistId + "\n" + e);
       Logger.log(playlistId + "\n" + e);
     }
     
-    for (var i = 0; i < playlistItemsResponse.items.length; i++)
-    {
+    for (var i = 0; i < playlistItemsResponse.items.length; i++) {
       var videoId = playlistItemsResponse.items[i].snippet.resourceId.videoId;
       videoIds.push(videoId);
       
-      if (getChannels)
-      {
-        try
-        {
+      if (getChannels) {
+        try {
           var videoResponse = YouTube.Videos.list("snippet",{id: videoId, maxResults: 1, type: 'video'});
           
           var video = videoResponse.items[0].snippet;
@@ -313,8 +277,7 @@ function getPlaylistDetails(playlistId, getChannels)
   ];
 }
 
-function formatDate(date)
-{
+function formatDate(date) {
   if (typeof date == "string")
     date = date.replace("T", "   ").replace("Z", "").replace(".000Z", "");
   else 
@@ -323,16 +286,14 @@ function formatDate(date)
   return date;
 }
 
-function formatHyperlink(title, url)
-{
+function formatHyperlink(title, url) {
   var str = '=HYPERLINK("' + url + '", "' + title + '")';
   return str;
 }
 
-function checkPlaylistsTrigger()
-{
+function checkPlaylistsTrigger() {
   ScriptApp.newTrigger("checkAllPlaylists")
   .timeBased()
-  .everyHours(1)
+  .everyHours(4)
   .create();
 }
