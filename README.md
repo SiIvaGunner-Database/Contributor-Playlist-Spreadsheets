@@ -1,11 +1,11 @@
-# SiIvaGunner Contributor Playlists
+# SiIvaGunner Contributor Playlist Spreadsheets
 
-Keeps track of updates to channel contributor playlists.
+Google Apps Script functions for documenting SiIvaGunner related contributor playlists in Google Sheets spreadsheets.
 
 ### External Links
 
-* [Project Spreadsheet](https://docs.google.com/spreadsheets/d/13UJWz8wWSVADkMW_lW8nkQFcez6T7xuDw3_IrMuez2g/edit)
+* [SiIvaGunner Contributor Playlists Spreadsheet](https://docs.google.com/spreadsheets/d/13UJWz8wWSVADkMW_lW8nkQFcez6T7xuDw3_IrMuez2g/edit)
 
-* [Project Form](https://docs.google.com/forms/d/e/1FAIpQLSdEGJsC0sPr3e_Vrv8T9NS28zTsvJwUyLPB6yhNZkQezhb5tA/viewform)
+* [Submit New Contributor Playlist Form](https://docs.google.com/forms/d/e/1FAIpQLSdEGJsC0sPr3e_Vrv8T9NS28zTsvJwUyLPB6yhNZkQezhb5tA/viewform)
 
-* [SiIvaGunner Wiki](https://siivagunner.fandom.com/wiki/SiIvaGunner_Wiki)
+* [List of Contributors](https://siivagunner.fandom.com/wiki/List_of_contributors)
