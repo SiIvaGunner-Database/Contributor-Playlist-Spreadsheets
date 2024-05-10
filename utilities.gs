@@ -1,86 +1,83 @@
 
 function getPlaylistDetails(playlistId, getChannels) {
-  var status = "Public";
-  var channels = [];
-  var videoIds = [];
-  var nextPageToken = "";
-  
+  const status = "Public"
+  const videoIds = []
+  let channels = []
+  let nextPageToken = ""
+  let playlistResponse
+
   try {
-    var playlistResponse = YouTube.Playlists.list("snippet", {id: playlistId});
+    playlistResponse = YouTube.Playlists.list("snippet", { id: playlistId })
+  } catch (e) {
+    errorlog.push(playlistId + "\n" + e)
+    console.warn(playlistId + "\n", e)
   }
-  catch(e) {
-    errorlog.push(playlistId + "\n" + e);
-    Logger.log(playlistId + "\n" + e);
-  }
-  
-  var playlist = playlistResponse.items[0].snippet;
-  var playlistTitle = playlist.title;
-  var contributor = playlist.channelTitle;
-  var contributorId = playlist.channelId;
-  
+
+  const playlist = playlistResponse.items[0].snippet
+  const playlistTitle = cleanString(playlist.title)
+  const contributor = cleanString(playlist.channelTitle)
+  const contributorId = playlist.channelId
+  let videoCount
+
   while (nextPageToken != null) {
+    let playlistItemsResponse
+
     try {
-      var playlistItemsResponse = YouTube.PlaylistItems.list("snippet", {playlistId: playlistId, maxResults: 50, pageToken: nextPageToken});
+      playlistItemsResponse = YouTube.PlaylistItems.list("snippet", { playlistId: playlistId, maxResults: 50, pageToken: nextPageToken })
+    } catch (e) {
+      errorlog.push(playlistId + "\n" + e)
+      console.log(playlistId + "\n", e)
     }
-    catch(e) {
-      errorlog.push(playlistId + "\n" + e);
-      Logger.log(playlistId + "\n" + e);
-    }
-    
-    for (var i = 0; i < playlistItemsResponse.items.length; i++) {
-      var videoId = playlistItemsResponse.items[i].snippet.resourceId.videoId;
-      videoIds.push(videoId);
-      
+
+    for (let i = 0; i < playlistItemsResponse.items.length; i++) {
+      const videoId = playlistItemsResponse.items[i].snippet.resourceId.videoId
+      videoIds.push(videoId)
+
       if (getChannels) {
         try {
-          var videoResponse = YouTube.Videos.list("snippet",{id: videoId, maxResults: 1, type: 'video'});
-          
-          var video = videoResponse.items[0].snippet;
-          var channel = video.channelTitle;
-          var channelId = video.channelId;
-          
-          var index = channels.findIndex(title => {return title == channel});
-          
-          if (index == -1)
-            channels.push(channel);
+          const videoResponse = YouTube.Videos.list("snippet", { id: videoId, maxResults: 1, type: 'video' })
+          const video = videoResponse.items[0].snippet
+          const channel = cleanString(video.channelTitle)
+          const index = channels.findIndex(title => title == channel)
+
+          if (index === -1) {
+            channels.push(channel)
+          }
+        } catch (e) {
+          console.warn(videoId + "\n", e)
         }
-        catch (e) {}
+      } else {
+        channels = "Ignore"
       }
-      else channels = "Ignore";
     }
-    
-    var videoCount = playlistItemsResponse.pageInfo.totalResults;
-    nextPageToken = playlistItemsResponse.nextPageToken;
+
+    videoCount = playlistItemsResponse.pageInfo.totalResults
+    nextPageToken = playlistItemsResponse.nextPageToken
   }
-  
+
   return [
-    formatHyperlink(playlistId, "https://www.youtube.com/playlist?list=" + playlistId), 
+    formatHyperlink(playlistId, "https://www.youtube.com/playlist?list=" + playlistId),
     playlistTitle,
     formatHyperlink(contributor, "https://www.youtube.com/channel/" + contributorId),
     channels,
     videoCount,
     videoIds,
     status
-  ];
+  ]
+}
+
+function cleanString(string) {
+  return string.replaceAll("=", "")
 }
 
 function formatDate(date) {
-  if (typeof date == "string")
-    date = date.replace("T", "   ").replace("Z", "").replace(".000Z", "");
-  else 
-    date = Utilities.formatDate(date, "UTC", "yyyy-MM-dd   HH:mm:ss");
-  
-  return date;
+  if (typeof date == "string") {
+    return date.replace("T", "   ").replace("Z", "").replace(".000Z", "")
+  } else {
+    return Utilities.formatDate(date, "UTC", "yyyy-MM-dd   HH:mm:ss")
+  }
 }
 
 function formatHyperlink(title, url) {
-  var str = '=HYPERLINK("' + url + '", "' + title + '")';
-  return str;
-}
-
-function checkPlaylistsTrigger() {
-  ScriptApp.newTrigger("checkAllPlaylists")
-  .timeBased()
-  .everyHours(4)
-  .create();
+  return '=HYPERLINK("' + url + '", "' + title.replaceAll('"', '""') + '")'
 }
