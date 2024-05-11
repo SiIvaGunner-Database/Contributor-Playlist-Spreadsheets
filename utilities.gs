@@ -19,7 +19,7 @@ function getPlaylistDetails(playlistId, getChannels) {
   const contributorId = playlist.channelId
   let videoCount
 
-  while (nextPageToken != null) {
+  while (nextPageToken !== null) {
     let playlistItemsResponse
 
     try {
@@ -38,7 +38,7 @@ function getPlaylistDetails(playlistId, getChannels) {
           const videoResponse = YouTube.Videos.list("snippet", { id: videoId, maxResults: 1, type: 'video' })
           const video = videoResponse.items[0].snippet
           const channel = cleanString(video.channelTitle)
-          const index = channels.findIndex(title => title == channel)
+          const index = channels.findIndex(title => title === channel)
 
           if (index === -1) {
             channels.push(channel)
@@ -71,7 +71,7 @@ function cleanString(string) {
 }
 
 function formatDate(date) {
-  if (typeof date == "string") {
+  if (typeof date === "string") {
     return date.replace("T", "   ").replace("Z", "").replace(".000Z", "")
   } else {
     return Utilities.formatDate(date, "UTC", "yyyy-MM-dd   HH:mm:ss")

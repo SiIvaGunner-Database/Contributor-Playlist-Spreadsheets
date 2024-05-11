@@ -10,9 +10,10 @@ function checkAllPlaylists() {
   const formSpreadsheet = SpreadsheetApp.openById("1rKis0NkF_v5YLzveQ1e1MQMbDgjTpRUPkIdk-6PB12Q")
   const formSheet = formSpreadsheet.getSheetByName("Contributor Playlists")
   let row = formSheet.getLastRow()
+  let status
 
   do {
-    const status = formSheet.getRange(row, 3).getValue()
+    status = formSheet.getRange(row, 3).getValue()
 
     if (status === "") {
       const newPlaylists = formSheet.getRange(row, 2).getValue().replace(/ /g, "").split(",")
@@ -22,7 +23,7 @@ function checkAllPlaylists() {
 
         const playlistId = newPlaylists[i]
         const playlistIds = playlistSheet.getRange(2, 1, playlistSheet.getLastRow() - 1).getValues()
-        const index = playlistIds.findIndex(id => { return id == playlistId })
+        const index = playlistIds.findIndex(id => id === playlistId)
 
         const emailAddress = "a.k.zamboni@gmail.com"
         const subject = "SiIvaGunner Contributor Playlists Update"
@@ -31,7 +32,7 @@ function checkAllPlaylists() {
         console.log(message)
         MailApp.sendEmail(emailAddress, subject, message)
 
-        if (index != -1) {
+        if (index !== -1) {
           formSheet.getRange(row, 3).setValue("Failed")
           console.log("Duplicate playlist ID: " + playlistId)
           errorlog.push("Duplicate playlist ID: " + playlistId)
@@ -78,13 +79,13 @@ function checkAllPlaylists() {
         Utilities.sleep(10000)
         const responseCode = null
       }
-    } while (responseCode == null)
+    } while (responseCode === null)
 
     console.log("Row " + row + ": " + playlistTitle + " (" + responseCode + ")")
 
     switch (responseCode) {
       case 200:
-        if (status != "Public" && status != "Unlisted") {
+        if (status !== "Public" && status !== "Unlisted") {
           playlistSheet.getRange(row, 7).setValue("Public")
           changelog.push("The playlist has been made public.")
           status = "Public"
@@ -93,14 +94,14 @@ function checkAllPlaylists() {
       case 401:
         break
       case 403:
-        if (status != "Private") {
+        if (status !== "Private") {
           playlistSheet.getRange(row, 7).setValue("Private")
           changelog.push("The playlist has been made private.")
           status = "Private"
         }
         break
       case 404:
-        if (status != "Deleted") {
+        if (status !== "Deleted") {
           playlistSheet.getRange(row, 7).setValue("Deleted")
           changelog.push("The playlist has been deleted.")
           status = "Deleted"
@@ -119,25 +120,25 @@ function checkAllPlaylists() {
         playlistDetails = getPlaylistDetails(playlistId, false)
       }
 
-      if (playlistDetails[1] != playlistTitle) {
+      if (playlistDetails[1] !== playlistTitle) {
         console.log("Setting playlist title " + playlistDetails[1])
         changelog.push("Old playlist title: " + playlistTitle + "\nNew playlist title: " + playlistDetails[1])
         playlistSheet.getRange(row, 2).setValue(playlistDetails[1])
       }
 
-      if (playlistDetails[2] != contributor) {
+      if (playlistDetails[2] !== contributor) {
         console.log("Setting contributor " + playlistDetails[2])
         changelog.push("Old contributor name: " + contributor.replace(/.*", "/g, "").replace("\")", "") +
           "\nNew contributor name: " + playlistDetails[2].replace(/.*", "/g, "").replace("\")", ""))
         playlistSheet.getRange(row, 3).setValue(playlistDetails[2])
       }
 
-      if (playlistDetails[5].toString() != videoIds.toString()) {
+      if (playlistDetails[5].toString() !== videoIds.toString()) {
         console.log(videoIds)
         console.log(playlistDetails[5])
 
         for (const k in playlistDetails[5]) {
-          const index = videoIds.findIndex(id => { return id == playlistDetails[5][k] })
+          const index = videoIds.findIndex(id => id === playlistDetails[5][k])
 
           if (index === -1) {
             changelog.push(formatHyperlink("Added " + playlistDetails[5][k], "https://www.youtube.com/watch?v=" + playlistDetails[5][k]))
@@ -145,14 +146,14 @@ function checkAllPlaylists() {
         }
 
         for (const k in videoIds) {
-          const index = playlistDetails[5].findIndex(id => { return id == videoIds[k] })
+          const index = playlistDetails[5].findIndex(id => id === videoIds[k])
 
           if (index === -1) {
             changelog.push(formatHyperlink("Removed " + videoIds[k], "https://www.youtube.com/watch?v=" + videoIds[k]))
           }
         }
 
-        if (playlistDetails[3] != "Ignore") {
+        if (playlistDetails[3] !== "Ignore") {
           playlistSheet.getRange(row, 4).setValue(playlistDetails[3].toString().replace(/,/g, ", "))
         }
 
@@ -173,7 +174,7 @@ function checkAllPlaylists() {
         changelogSheet.getRange(2, 3).setValue(changelog[i])
         changelogSheet.getRange(2, 4).setValue(playlistDetails[2])
 
-        if (changelog[i].indexOf("Added") != -1 || changelog[i].indexOf("Removed") != -1) {
+        if (changelog[i].indexOf("Added") !== -1 || changelog[i].indexOf("Removed") !== -1) {
           try {
             const videoId = changelog[i].replace(/.*v=/g, "").replace(/".*/g, "")
             const videoResponse = YouTube.Videos.list("snippet", { id: videoId, maxResults: 1, type: 'video' })
@@ -199,12 +200,12 @@ function checkAllPlaylists() {
     currentTime = new Date()
   } while (++row <= lastRow && currentTime.getTime() - startTime.getTime() < 300000) // Run for 5 minutes.
 
-  if (errorlog.length > 0 || changelog.length > 0) {
+  if (errorlog.length > 0) {
     // Send an email notifying of any changes or errors.
     const emailAddress = "a.k.zamboni@gmail.com"
     const subject = "SiIvaGunner Contributor Playlists Update"
-    const changeCount = errorlog.length + changelog.length
-    const message = "[https://docs.google.com/spreadsheets/d/13UJWz8wWSVADkMW_lW8nkQFcez6T7xuDw3_IrMuez2g/edit#gid=1039083277]\nThere are " + changeCount + " updates.\n\n" + errorlog.join("\n\n") + changelog.join("\n\n")
+    const changeCount = errorlog.length
+    const message = "[https://docs.google.com/spreadsheets/d/13UJWz8wWSVADkMW_lW8nkQFcez6T7xuDw3_IrMuez2g/edit#gid=1039083277]\nThere are " + changeCount + " updates.\n\n" + errorlog.join("\n\n")
 
     MailApp.sendEmail(emailAddress, subject, message)
     console.log("Email successfully sent.\n" + message)
