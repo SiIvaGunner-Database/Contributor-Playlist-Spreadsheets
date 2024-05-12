@@ -19,7 +19,7 @@ function getPlaylistDetails(playlistId, getChannels) {
   const contributorId = playlist.channelId
   let videoCount
 
-  while (nextPageToken !== null) {
+  while (nextPageToken !== undefined) {
     let playlistItemsResponse
 
     try {

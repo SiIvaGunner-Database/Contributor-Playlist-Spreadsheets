@@ -77,9 +77,8 @@ function checkAllPlaylists() {
       } catch (e) {
         console.warn(e)
         Utilities.sleep(10000)
-        const responseCode = null
       }
-    } while (responseCode === null)
+    } while (responseCode === undefined)
 
     console.log("Row " + row + ": " + playlistTitle + " (" + responseCode + ")")
 
