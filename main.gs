@@ -174,8 +174,9 @@ function checkAllPlaylists() {
         changelogSheet.getRange(2, 4).setValue(playlistDetails[2])
 
         if (changelog[i].indexOf("Added") !== -1 || changelog[i].indexOf("Removed") !== -1) {
+          const videoId = changelog[i].replace(/.*v=/g, "").replace(/".*/g, "")
+
           try {
-            const videoId = changelog[i].replace(/.*v=/g, "").replace(/".*/g, "")
             const videoResponse = YouTube.Videos.list("snippet", { id: videoId, maxResults: 1, type: 'video' })
 
             const video = videoResponse.items[0].snippet
