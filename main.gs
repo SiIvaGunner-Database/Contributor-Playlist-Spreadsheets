@@ -12,6 +12,7 @@ function checkAllPlaylists() {
   let row = formSheet.getLastRow()
   let status
 
+  // Loop through form submissions
   do {
     status = formSheet.getRange(row, 3).getValue()
 
@@ -54,10 +55,10 @@ function checkAllPlaylists() {
     }
   } while (--row > 1 && status === "")
 
-  row = 2
+  row = Number(PropertiesService.getScriptProperties().getProperty("currentRow"))
   const lastRow = playlistSheet.getLastRow()
-  let currentTime
 
+  // Loop through contributor playlists
   do {
     const changelog = []
     let playlistDetails = []
@@ -196,9 +197,13 @@ function checkAllPlaylists() {
         playlistSheet.getRange(row, 8).setValue(logDate)
       }
     }
+  } while (++row <= lastRow && new Date().getTime() - startTime.getTime() < 300000) // Run for 5 minutes.
 
-    currentTime = new Date()
-  } while (++row <= lastRow && currentTime.getTime() - startTime.getTime() < 300000) // Run for 5 minutes.
+  if (row > lastRow) {
+    row = 2
+  }
+
+  PropertiesService.getScriptProperties().setProperty("currentRow", row)
 
   if (errorlog.length > 0) {
     // Send an email notifying of any changes or errors.
