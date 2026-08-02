@@ -51,6 +51,12 @@ function getPlaylistDetails(playlistId, getChannels) {
       }
     }
 
+    // If the current page taken is the same as the next page token, end the loop
+    if (nextPageToken === playlistItemsResponse.nextPageToken) {
+      console.log("Ending playlist request loop due to repeated page token")
+      break
+    }
+
     videoCount = playlistItemsResponse.pageInfo.totalResults
     nextPageToken = playlistItemsResponse.nextPageToken
   }
